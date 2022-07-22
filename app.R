@@ -4,7 +4,13 @@ library(shinydashboard)
 library(leaflet)
 library(DT)
 library(plotly)
-
+library(reshape2)
+library(viridis)
+library(tm) 
+library(wordcloud) 
+library(syuzhet) 
+library(SnowballC)
+library(scales)
 
 
 ui <- dashboardPage(
@@ -223,7 +229,7 @@ ui <- dashboardPage(
                             HTML('&nbsp;'),
                             HTML('&nbsp;'),
                             HTML('&nbsp;'),
-                            "6.	Dataset page contains the datasets we used in this project.",
+                            "5.	Dataset page contains the datasets we used in this project.",
                             style = "font-family: 'times'"
                         ),
                         style = "margin-bottom: 0px;"
@@ -262,7 +268,6 @@ ui <- dashboardPage(
                                 em("//www.eia.gov/dnav/pet/PET_PRI_GND_DCUS_NUS_W.htm"),
                                 href = "//www.eia.gov/dnav/pet/PET_PRI_GND_DCUS_NUS_W.htm"
                             ),
-                            #TODO: insert link
                             style = "font-family: 'times'"
                         ),
                         style = "margin-bottom: 0px;"
@@ -282,10 +287,28 @@ ui <- dashboardPage(
                                 ),
                                 href = "//www.energy.ca.gov/data-reports/energy-almanac/transportation-energy/estimated-gasoline-price-breakdown-and-margins"
                             ),
-                            #TODO: insert link
                             style = "font-family: 'times'"
                         ),
                         style = "margin-bottom: 0px;"
+                    ),
+                    p(
+                      h4(
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        "Big events influenced oil market from:",
+                        tags$a(
+                          em(
+                            "//www.eia.gov/finance/markets/crudeoil/spot_prices.php"
+                          ),
+                          href = "//www.eia.gov/finance/markets/crudeoil/spot_prices.php"
+                        ),
+                        style = "font-family: 'times'"
+                      ),
+                      style = "margin-bottom: 0px;"
                     )
                 ),
                 box(
@@ -303,8 +326,13 @@ ui <- dashboardPage(
                             HTML('&nbsp;'),
                             HTML('&nbsp;'),
                             HTML('&nbsp;'),
-                            "We used the Shiny package in R to build this interactive web page. See the original repository here.",
-                            #TODO: insert link
+                            "We used the Shiny package in R to build this interactive web page. See the original repository",
+                            tags$a(
+                              em(
+                                "here."
+                              ),
+                              href ="//github.com/FarrahXie/gasoline"
+                            ),
                             style = "font-family: 'times'"
                         ),
                         style = "margin-bottom: 0px;"
@@ -317,8 +345,7 @@ ui <- dashboardPage(
                             HTML('&nbsp;'),
                             HTML('&nbsp;'),
                             HTML('&nbsp;'),
-                            "Methods for word cloud:",
-                            #TODO: needs to be done
+                            "Methods for word cloud: Since the twitter API server is down, we cannot get the real time data, so our dataset is from Kaggle which inlcudes Twitter users comments in July 2019. We mainly used wordcloud and syuzhet package functions to create the wordcloud with the dataset.",
                             style = "font-family: 'times'"
                         ),
                         style = "margin-bottom: 0px;"
@@ -331,7 +358,59 @@ ui <- dashboardPage(
                     style = "font-family: 'times'",
                     solidHeader = TRUE,
                     width = 12,
-                    height = 200
+                    height = 200,
+                    p(
+                      h4(
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        "Farrah Xie: Fall forward. farrahxym@gmail.com",
+                        style = "font-family: 'times'"
+                      ),
+                      style = "margin-bottom: 0px;"
+                    ),
+                    p(
+                      h4(
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        "Yuanrong Liu: ESTJ, Sit-up player. yliu417@jh.edu",
+                        style = "font-family: 'times'"
+                      ),
+                      style = "margin-bottom: 0px;"
+                    ),
+                    p(
+                      h4(
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        "Yifan Tu: ENFP, BARM's graduate, Shanghai-ning, OK. ytu14@jh.edu",
+                        style = "font-family: 'times'"
+                      ),
+                      style = "margin-bottom: 0px;"
+                    ),
+                    p(
+                      h4(
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        HTML('&nbsp;'),
+                        "Yifan Wang: ENFJ, BARM's graduate, Dreamer. ywang652@jh.edu",
+                        style = "font-family: 'times'"
+                      ),
+                      style = "margin-bottom: 0px;"
+                    ),
                 ),
                 h4(
                     a("Back to top", type = "button", href = "#main"), 
@@ -597,7 +676,6 @@ ui <- dashboardPage(
                                     ),
                                     href = "https://www.eia.gov/energyexplained/gasoline/factors-affecting-gasoline-prices.php"
                                 ),
-                                #TODO: insert link
                                 style = "font-family: 'times'"
                             ),
                             style = "margin-bottom: 0px;"
@@ -614,7 +692,6 @@ ui <- dashboardPage(
                                     ),
                                     href = "https://www.forbes.com/advisor/personal-finance/how-to-save-money-on-gas/"
                                 ),
-                                #TODO: insert link
                                 style = "font-family: 'times'"
                             ),
                             style = "margin-bottom: 0px;"
@@ -635,16 +712,23 @@ ui <- dashboardPage(
                 tabPanel(
                     h4("Price Breakdown", style = "font-family: 'times'", align = "center"),
                     br(),
-                    selectInput(
-                        "breakdown_type",
-                        "Choose a type",
-                        choices = c("All", "Taxes", "Marketing", "Refining", "Crued Oil")
+                    fluidRow(
+                      column(
+                        12,
+                        plotlyOutput("plot1")
+                      ),
                     ),
-                    #connect with data later
-                    plotOutput("plot1"),
+                    h6("There are negative records on the original data, hence, there will be some points exceed 100% and below 0%. The reason of the appearance of the negative record is that there is profit counted into the mkt category in the raw data.",style = "font-family: 'times'"),
                     tags$hr(style = "border-color: white;"),
-                    dateInput("date", "Choose a Date"),
-                    #default: all data; choose a specific day to see breakdown of oil price
+                    sliderInput(
+                    "breakdown_date",
+                    "Choose a Date",
+                    min = as.Date("1999/01/04", "%Y/%m/%d"),
+                    max = as.Date("2022/06/27", "%Y/%m/%d"),
+                    step = 7,
+                    value = as.Date("2011/06/06"),
+                    timeFormat = "%Y/%m/%d",
+                     ),
                     plotOutput("plot2")
                 ),
                 tabPanel(
@@ -652,93 +736,38 @@ ui <- dashboardPage(
                     fluidRow(
                         column(
                             6,
-                            checkboxGroupInput(
+                            checkboxInput(
                                 "Event",
-                                "Choose one or multiple events",
-                                choices = c(
-                                    "With natural disaster",
-                                    "With military event",
-                                    "Adjusted by inflation"
-                                )
+                                "Check for big events",
+                                FALSE
                             )
                         ),
                         column(
                             6,
                             checkboxGroupInput(
-                                "Oil Category",
+                                "category",
                                 "Choose one or multiple oil",
-                                choices = c("Regular", "Midgrade", "Premium")
+                                choices = c("Regular", "Midgrade", "Premium"),selected = c("Regular", "Midgrade", "Premium")
                             )
                         )
                     ),
-                    plotOutput("plot3") #leaflet
+                    plotlyOutput("plot3") #leaflet
                 ),
                 tabPanel(
                     h4("Price Distribution", style = "font-family: 'times'", align = "center"),
-                    selectInput(
-                        "Address",
-                        "Select a state",
-                        choices = c(
-                            " AL ",
-                            " AK ",
-                            " AZ ",
-                            " AR ",
-                            " AS ",
-                            " CA ",
-                            " CO ",
-                            " CT ",
-                            " DE ",
-                            " DC ",
-                            " FL ",
-                            " GA ",
-                            " GU ",
-                            " HI ",
-                            " ID ",
-                            " IL ",
-                            " IN ",
-                            " IA ",
-                            " KS ",
-                            " KY ",
-                            " LA ",
-                            " ME ",
-                            " MD ",
-                            " MA ",
-                            " MI ",
-                            " MN ",
-                            " MS ",
-                            " MO ",
-                            " MT ",
-                            " NE ",
-                            " NV ",
-                            " NH ",
-                            " NJ ",
-                            " NM ",
-                            " NY ",
-                            " NC ",
-                            " ND ",
-                            " CM ",
-                            " OH ",
-                            " OK ",
-                            " OR ",
-                            " PA ",
-                            " PR ",
-                            " RI ",
-                            " SC ",
-                            " SD ",
-                            " TN ",
-                            " TX ",
-                            " TT ",
-                            " UT ",
-                            " VT ",
-                            " VA ",
-                            " VI ",
-                            " WA ",
-                            " WV ",
-                            " WI ",
-                            " WY "
-                        )
+                    
+                    sliderInput(
+                      "distribution_date",
+                      "Date",
+                      min = as.Date("1992/05/11", "%Y/%m/%d"),
+                      max = as.Date("2022/06/30", "%Y/%m/%d"),
+                      step = 7,
+                      value = as.Date("2005/03/01"),
+                      timeFormat = "%Y/%m/%d",
+                      animate = animationOptions(interval = 50, loop = FALSE)
                     ),
-                    plotOutput("plot4")
+                    
+                    plotlyOutput("plot4")
                 ),
             )
             
@@ -759,24 +788,15 @@ ui <- dashboardPage(
                 column(
                     4,
                     sliderInput(
-                        "slider_date",
-                        "Date",
-                        min = as.Date("2022/01/01", "%Y/%m/%d"),
-                        max = as.Date("2022/06/30", "%Y/%m/%d"),
-                        value = as.Date("2022/03/01"),
-                        timeFormat = "%Y/%m/%d"
-                    ),
-                    br(),
-                    sliderInput(
                         "slider_number",
                         "Number of words",
-                        min = 20,
-                        max = 70,
-                        value = 50
+                        min = 5,
+                        max = 40,
+                        value = 20
                     ),
                     br(),
-                    h5(strong("Blue Color = Positive Sentiment"), style = "color: blue"),
-                    h5(strong("Orange Color = Negative Sentiment"), style = "color: orange")
+                    h5(strong("Orange Color = Positive Sentiment"), style = "color: orange"),
+                    h5(strong("Blue Color = Negative Sentiment"), style = "color: blue")
                 )
             )
             
@@ -789,13 +809,30 @@ ui <- dashboardPage(
                     ),
                     tabsetPanel(
                         tabPanel(
-                            h4("Price", style = "font-family: 'times'", align = "center"),
-                            "content_tab1"
+                            h4("Price Change", style = "font-family: 'times'", align = "center"),
+                            dataTableOutput("change_table")
                         ),
                         tabPanel(
                             h4("Price breakdown", style = "font-family: 'times'", align = "center"),
-                            "content_tab2"
+            
+                            dataTableOutput("breakdowntable")
                         ),
+                        tabPanel(
+                          h4("Price Distribution", style = "font-family: 'times'", align = "center"),
+                          
+                          dataTableOutput("distributiontable")
+                        ),
+                        tabPanel(
+                          h4("Big Events", style = "font-family: 'times'", align = "center"),
+                          
+                          dataTableOutput("eventable")
+                        ),
+                        tabPanel(
+                          h4("Twitter Data", style = "font-family: 'times'", align = "center"),
+                          
+                          dataTableOutput("twittertable")
+                        )
+                       
                     )),
         )
     )),
@@ -806,30 +843,284 @@ ui <- dashboardPage(
 
 
 server <- function(input, output, session) {
+    ## data cleaning for price breakdown
+  
+  breakdown = read_csv("Gasoline Price Breakdown and Margins.csv")
+  breakdown$Date <- as.Date(breakdown$Date, format="%m/%d/%Y")
+  breakdown["Crude_Oil"] <- breakdown[2]/breakdown[7]
+  breakdown["State_Storage"] <- breakdown[3]/breakdown[7]
+  breakdown["Refining"] <- breakdown[4]/breakdown[7]
+  breakdown["Market"] <- breakdown[5]/breakdown[7]
+  breakdown["Taxes"] <- breakdown[6]/breakdown[7]
+  breakdown<- breakdown[-c(2:7)]
+  
+  bd<- breakdown %>% pivot_longer(cols = 2:6,names_to = "Type",values_to = "Percentage")
+  
+    ## data cleaning for price change
+    price_change = read_csv("oil price change.csv")
+    price_change$Date <- as.Date(price_change$Date, format ="%Y/%m/%d")
+  
+    event = read_csv("big event.csv")
+    event$Date <- as.Date(event$Date, format ="%m/%d/%y")
+    names(price_change)[names(price_change) == 'Regular Conventional'] <- 'Regular_Conventional'
+    names(price_change)[names(price_change) == 'Midgrade Conventional'] <- 'Midgrade_Conventional'
+    names(price_change)[names(price_change) == 'Premium Conventional'] <- 'Premium_Conventional'
+    colnames(price_change)[2:4]= c("Regular", "Midgrade",  "Premium")
+    price_change_long = price_change %>%
+      pivot_longer(cols = 2:4,names_to = "type",values_to = "price")
+    price_with_event = left_join(price_change_long,event,by="Date")
+    data_subset = price_with_event %>% filter(!is.na(Big_Events.y),type == "Midgrade")
+    data_subset = data_subset[-c(3)]
+    
+    ## data cleaning for price distribution
+    df <- read_csv("Regular Conventional.csv")
+    
+    df <- df[-c(1,2),c(1,4:17)]
+    colnames(df) <- c("Date", "NewEngland", "CentralAtlantic", "LowerAtlantic", "Midwest", "GulfCoast", "RockyMountain", "WestCoast", "CO", "FL", "NY", "MN", "OH", "TX", "WA" )
+    df$Date <- df$Date %>% as.Date("%b %d, %Y")
+    
+    # convert PADD to states and get rid of PADD
+    df['OR'] <- df$WestCoast
+    df['CA'] <- df$WestCoast
+    df['NV'] <- df$WestCoast
+    df['AZ'] <- df$WestCoast
+    df['AK'] <- df$WestCoast
+    df['HI'] <- df$WestCoast
+    df['MT'] <- df$RockyMountain
+    df['ID'] <- df$RockyMountain
+    df['UT'] <- df$RockyMountain
+    df['WY'] <- df$RockyMountain
+    df['NM'] <- df$GulfCoast
+    df['AR'] <- df$GulfCoast
+    df['LA'] <- df$GulfCoast
+    df['MS'] <- df$GulfCoast
+    df['AL'] <- df$GulfCoast
+    df['ND'] <- df$Midwest
+    df['SD'] <- df$Midwest
+    df['NE'] <- df$Midwest
+    df['KS'] <- df$Midwest
+    df['OK'] <- df$Midwest
+    df['IA'] <- df$Midwest
+    df['MO'] <- df$Midwest
+    df['WI'] <- df$Midwest
+    df['IL'] <- df$Midwest
+    df['MI'] <- df$Midwest
+    df['IN'] <- df$Midwest
+    df['KY'] <- df$Midwest
+    df['TN'] <- df$Midwest
+    df['GA'] <- df$LowerAtlantic
+    df['SC'] <- df$LowerAtlantic
+    df['NC'] <- df$LowerAtlantic
+    df['VA'] <- df$LowerAtlantic
+    df['WV'] <- df$LowerAtlantic
+    df['PA'] <- df$CentralAtlantic
+    df['NJ'] <- df$CentralAtlantic
+    df['MD'] <- df$CentralAtlantic
+    df['DE'] <- df$CentralAtlantic
+    df['RI'] <- df$NewEngland
+    df['CT'] <- df$NewEngland
+    df['MA'] <- df$NewEngland
+    df['NH'] <- df$NewEngland
+    df['VT'] <- df$NewEngland
+    df['ME'] <- df$NewEngland
+    df1 <- df[,c(1,9:58)]
+    
+    #df1[,2:51] <- df1[,order(colnames(df1[2:51]))]
+    
+    # transpose data
+    df_final <- df1 %>%
+      pivot_longer(cols=2:51, names_to="State",values_to="Price")
+    df_final[,3] <- as.data.frame(apply(df_final[,3], 2, as.numeric))
+    
+    ## dataset for twitter
+    rt_subset <- read_csv("tweets.csv")
+    
+
+    
     
     observeEvent(input$intro_content, {
       updateNavbarPage(session, "navbar",
                        selected = "mytab2") 
     })
     
-    output$plot1 = renderPlot({
-        
+    output$plot1 = renderPlotly({
+      ggplot(bd, aes(Date, y=Percentage, group=Type,fill = Type))+ 
+        scale_fill_brewer(palette="Set3") + 
+        theme_minimal() + 
+        labs(y = "Percentage of the Total Price",x="Year", fill = "Compositions in Gasoline Price")+
+        ggtitle("The Unstable Distribution of Gasoline Price Margins")+
+        scale_y_continuous(labels = percent)+
+        geom_area(alpha=0.7 , size=.7)
     })
+    
     output$plot2 = renderPlot({
+      bd_date <- bd %>% filter(Date==input$breakdown_date)
+      ggplot(bd_date,aes(x="", y=Percentage, fill=Type))+ 
+        geom_bar(stat="identity", width=1) + coord_polar("y", start=0)+
+        scale_fill_brewer(palette="Set3")+
+        theme_minimal()+
+        ggtitle("Detailed Breakdown for a Specific Date")
+    })
+    
+    output$plot3 = renderPlotly({
+    
+      if (length(input$category) == 0) {
+        return()
+      }
+
+        f <- price_with_event %>%
+          filter(type %in% input$category) %>%
+          ggplot(aes(x = Date, color=type)) +
+          geom_line(aes(y = price)) +
+          labs(
+            title = "Gas Price Increased Over Time",
+            color = "Types",
+            x = "Year",
+            y = "Price (Dollars per Gallon)"
+          ) +
+          #scale_color_manual(
+          #  labels =
+           #   "Regular_Conventional",
+           # values = "green"
+          #) +
+          theme_bw() +
+          scale_y_continuous(
+            labels = function(x)
+              format(x, nsmall = 3)) +
+          scale_x_date(breaks = seq.Date(from = as.Date("1994-01-01"),
+                                         to = as.Date("2022-06-30"), by = "year"),
+                       labels = as.character(seq(1994, 2022, 1))) +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))
         
+        if(input$Event){
+          f = f + geom_point(data= data_subset,
+                             aes(x=Date, y=price,text = paste("Event:", Name)),
+                             size=10,color="black",alpha = 0.3)
+        }
+
+      return(ggplotly(f))
+      
     })
-    output$plot3 = renderPlot({
-        #Leaflet
+    
+    output$plot4 = renderPlotly({
+      
+      df_date <- df_final %>% 
+        filter(Date==input$distribution_date)
+      
+        map <- plot_geo(df_date, 
+                        locationmode = "USA-states") %>%
+            add_trace(locations = ~State,
+                    z = ~Price,
+                    color = ~Price,
+                    colorscale = "Red") %>% 
+            layout(geo = list(scope = "usa"),
+                title = "West Coast Gasoline Price is Generally More Expensive")
+      
+        return(ggplotly(map))
+      
     })
-    output$plot4 = renderPlot({
-        
-    })
+    
     output$plot5 = renderPlot({
-        
+      # Find the frequency of each word and store it on dataframe d
+      v <- rt_subset$text %>% 
+        VectorSource %>% 
+        Corpus %>% 
+        TermDocumentMatrix %>%
+        as.matrix %>%
+        rowSums  %>%
+        sort(decreasing=TRUE)
+      d <- data.frame(word = names(v),freq=v, 
+                      stringsAsFactors = FALSE)
+      
+      head(d,20)
+      
+      ###Visualize dataframe d with wordcloud package
+      minFreq=1
+      maxWords=input$slider_number
+      frequency=d$freq
+      frequency=round(sqrt(d$freq),0)
+      
+      
+      ### Let's come back and edit the raw tweets 
+      myWords=c("can", "just", 
+                "one", "think", 
+                "like", "get", 
+                "see", "will")
+      v <- rt_subset$text %>% 
+        VectorSource %>% 
+        Corpus %>% 
+        # Convert the text to lower case
+        tm_map(content_transformer(tolower)) %>%
+        # Remove numbers
+        tm_map(removeNumbers) %>%
+        # Remove english common stopwords
+        tm_map(removeWords, stopwords("english")) %>%
+        # Remove your own stop word 
+        # specify your stopwords as a character vector
+        tm_map(removeWords, myWords) %>% 
+        # Remove punctuations
+        tm_map(removePunctuation) %>% 
+        # Eliminate extra white spaces
+        tm_map(stripWhitespace) %>%
+        # Text stemming
+        tm_map(stemDocument) %>%
+        TermDocumentMatrix %>%
+        as.matrix %>%
+        rowSums %>%
+        sort(decreasing=TRUE) 
+      
+      d <- data.frame(word = names(v),freq=v, 
+                      stringsAsFactors = FALSE)
+      
+      
+      ### How about coloring each word based the its Sentiment
+      sentiments= get_sentiment(d$word)
+      NNWords = d %>% 
+        mutate(sentRes=sentiments) %>%
+        filter(sentRes!=0) %>%
+        mutate(color=case_when(sentRes<0~"blue", sentRes>0 ~ "orange"))
+      #set.seed(5)
+      # wordcloud(words = NNWords$word, freq = NNWords$freq, min.freq = minFreq, max.words=maxWords,random.order=FALSE,
+      #           colors=NNWords$color, ordered.colors=TRUE)
+      
+      ### We can also use transparency to show the level of sentiment
+      head(NNWords, n=2)
+      for (i in 1:nrow(NNWords)) {
+        curRate=NNWords$sentRes[i]
+        if(curRate<0){
+          NNWords$color[i]=rgb(red = 0/255,
+                               green = 94/255,blue = 255/255,alpha = -curRate)
+        }
+        else{
+          NNWords$color[i]=rgb(red = 255/255,
+                               green = 160/255,blue = 0/255,alpha = curRate)
+        }
+      }
+      set.seed(5)
+      wordcloud(words = NNWords$word, freq = NNWords$freq, 
+                scale = c(8,1),
+                min.freq = minFreq,
+                max.words=maxWords,random.order=FALSE,
+                colors=NNWords$color, ordered.colors=TRUE)
     })
     
+    output$breakdowntable = renderDataTable({
+      return(datatable(breakdown, rownames= FALSE))
+    })
+    output$change_table = renderDataTable({
+      return(datatable(price_change, rownames= FALSE))   
+    })
+    output$distributiontable = renderDataTable({
+      return(datatable(df, rownames= FALSE))   
+    })
+    output$eventable = renderDataTable({
+      return(datatable(event, rownames= FALSE))   
+    })
+    output$twittertable = renderDataTable({
+      return(datatable(rt_subset, rownames= FALSE))   
+    })
     
-    
+ 
 }
 
 shinyApp(ui = ui, server = server)
